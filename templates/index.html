@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Internet Speed Test</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Internet Speed Test</h1>
+        <div class="speed-test-container">
+            <div class="result-box">
+                <h2>Download Speed</h2>
+                <div id="download-speed" class="speed-value">--</div>
+                <div class="unit">Mbps</div>
+            </div>
+            <div class="result-box">
+                <h2>Upload Speed</h2>
+                <div id="upload-speed" class="speed-value">--</div>
+                <div class="unit">Mbps</div>
+            </div>
+            <div class="result-box">
+                <h2>Ping</h2>
+                <div id="ping" class="speed-value">--</div>
+                <div class="unit">ms</div>
+            </div>
+        </div>
+        <button id="start-test" class="test-button">Start Speed Test</button>
+        <div id="status" class="status"></div>
+    </div>
+
+    <script>
+        const startButton = document.getElementById('start-test');
+        const statusDiv = document.getElementById('status');
+        const downloadSpeed = document.getElementById('download-speed');
+        const uploadSpeed = document.getElementById('upload-speed');
+        const ping = document.getElementById('ping');
+
+        function updateResults() {
+            fetch('/get_results')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'running') {
+                        statusDiv.textContent = 'Testing...';
+                        startButton.disabled = true;
+                    } else if (data.status === 'completed') {
+                        downloadSpeed.textContent = data.download;
+                        uploadSpeed.textContent = data.upload;
+                        ping.textContent = data.ping;
+                        statusDiv.textContent = 'Test completed!';
+                        startButton.disabled = false;
+                    } else if (data.status === 'error') {
+                        statusDiv.textContent = 'Error occurred during test';
+                        startButton.disabled = false;
+                    }
+                });
+        }
+
+        startButton.addEventListener('click', () => {
+            fetch('/start_test')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'started') {
+                        statusDiv.textContent = 'Starting test...';
+                        startButton.disabled = true;
+                        // Reset values
+                        downloadSpeed.textContent = '--';
+                        uploadSpeed.textContent = '--';
+                        ping.textContent = '--';
+                        // Start polling for results
+                        const interval = setInterval(() => {
+                            updateResults();
+                            if (statusDiv.textContent === 'Test completed!' || 
+                                statusDiv.textContent === 'Error occurred during test') {
+                                clearInterval(interval);
+                            }
+                        }, 1000);
+                    }
+                });
+        });
+    </script>
+</body>
+</html> 
