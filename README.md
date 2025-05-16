@@ -19,8 +19,8 @@ A Flask-based web application that allows users to test their internet speed. Th
 
 1. Clone this repository:
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/Amoako419/SpeedTest.git
+cd SpeedTest
 ```
 
 2. Create a virtual environment (optional but recommended):
